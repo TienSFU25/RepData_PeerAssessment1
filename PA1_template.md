@@ -1,18 +1,11 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-options(scipen = 100000, digits = 0)
-```
+
 
 ## Loading and preprocessing the data
 
-```{r loadData, results="hide", message=FALSE}
+
+```r
 library(dplyr)
 library(ggplot2)
 
@@ -23,7 +16,8 @@ if (!exists("activityData")) {
 
 Helper function to be used later for plotting
 
-```{r helper}
+
+```r
 histStepsByDay <- function(data) {
   stepsTakenByDay <- data %>%
     group_by(date) %>%
@@ -39,19 +33,26 @@ histStepsByDay <- function(data) {
 
 ## What is mean total number of steps taken per day?
 
-```{r q2, warning=FALSE}
+
+```r
 activityResults <- histStepsByDay(activityData)
+```
+
+![](PA1_template_files/figure-html/q2-1.png)<!-- -->
+
+```r
 meanStepsTakenByDay <- activityResults[1] 
 medianStepsTakenByDay <- activityResults[2]
 ```
 
-Mean steps taken each day: `r meanStepsTakenByDay`
+Mean steps taken each day: 9354
 
-Median steps taken each day: `r medianStepsTakenByDay`
+Median steps taken each day: 10395
 
 ## What is the average daily activity pattern?
 
-```{r q3}
+
+```r
 # q3
 daysInExperiment <- length(unique(activityData$date))
 stepsTakenByInterval <- activityData %>%
@@ -63,17 +64,21 @@ g <- ggplot(stepsTakenByInterval, aes(x = interval, y = steps)) + geom_line()
 print(g)
 ```
 
-```{r findMaxInterval}
+![](PA1_template_files/figure-html/q3-1.png)<!-- -->
+
+
+```r
 maxIndex <- which.max(stepsTakenByInterval$steps)
 maxInterval <- stepsTakenByInterval[[maxIndex,1]]
 maxIntervalSteps <- stepsTakenByInterval[[maxIndex,2]]
 ```
 
-The 5 minute interval on average across all days with the maximum number of steps is `r maxInterval` with `r maxIntervalSteps` steps
+The 5 minute interval on average across all days with the maximum number of steps is 835 with 179 steps
 
 ## Imputing missing values
 
-```{r impute, warning=FALSE}
+
+```r
 validRows <- activityData %>% filter(!is.na(steps))
 meanStepsTakenByInterval <- mean(validRows$steps)
 medianStepsTakenByInterval <- median(validRows$steps)
@@ -84,23 +89,29 @@ activityDataRevised <- activityData %>%
   mutate(steps = ifelse(is.na(steps), meanStepsTakenByInterval, steps))
 
 activityResultsRevised <- histStepsByDay(activityDataRevised)
+```
+
+![](PA1_template_files/figure-html/impute-1.png)<!-- -->
+
+```r
 meanStepsTakenByDayRevised <- activityResultsRevised[1] 
 medianStepsTakenByDayRevised <- activityResultsRevised[2]
 ```
 
-Number of rows with NA steps: `r dim(activityData %>% filter(is.na(steps)))[[1]]`
+Number of rows with NA steps: 2304
 
 Our imputation strategy here was naive: if data was missing, we simply fill it in with the mean steps taken per interval. This will increase both the mean and median of steps taken by day.
 
-Mean steps taken by day after imputation: `r meanStepsTakenByDayRevised`
+Mean steps taken by day after imputation: 10766
 
-Median steps taken by day after imputation: `r medianStepsTakenByDayRevised`
+Median steps taken by day after imputation: 10766
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Weekends seem to be more "active" compared to weekdays
 
-```{r activityPatterns}
+
+```r
 stepsTakenPattern <- activityData %>%
   mutate(zeroIfNa = ifelse(is.na(steps), 0, steps), day=weekdays(as.Date(date))) %>%
   mutate(dayType = ifelse((day == "Saturday" | day == "Sunday"), "weekend", "weekday")) %>%
@@ -119,3 +130,5 @@ stepsTakenPatternPlot <- ggplot(stepsTakenPattern, aes(x = interval, y = steps))
 
 print(stepsTakenPatternPlot)
 ```
+
+![](PA1_template_files/figure-html/activityPatterns-1.png)<!-- -->
